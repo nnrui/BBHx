@@ -206,6 +206,17 @@ d_transferL_holder d_TDICombinationFD(d_Gslr_holder Gslr, double f, int TDItag, 
     cmplx z = gcmplx::exp(I * 2. * x);
     cmplx Xraw, Yraw, Zraw, Araw, Eraw, Traw;
     cmplx factor_convention, point5, c_one, c_two;
+
+    if (tdi2)
+    {
+        tdi2_factor = (-2. * I * sin(4. * x) * gcmplx::exp(I * 4. * x));
+    }
+    else
+    {
+        tdi2_factor = 1.0;
+    }
+
+
     if (TDItag == 1)
     {
         // # First-generation TDI XYZ
@@ -220,7 +231,6 @@ d_transferL_holder d_TDICombinationFD(d_Gslr_holder Gslr, double f, int TDItag, 
         transferL.transferL1 = factor * Xraw;
         transferL.transferL2 = factor * Yraw;
         transferL.transferL3 = factor * Zraw;
-        return transferL;
     }
 
     else
@@ -244,20 +254,16 @@ d_transferL_holder d_TDICombinationFD(d_Gslr_holder Gslr, double f, int TDItag, 
         Eraw = 0.5 * INVSQRT3 * ((1. - z) * (Gslr.G13 - Gslr.G31) + (2. + z) * (Gslr.G12 - Gslr.G32) + (1. + 2. * z) * (Gslr.G21 - Gslr.G23));
         Traw = INVSQRT6 * (Gslr.G21 - Gslr.G12 + Gslr.G32 - Gslr.G23 + Gslr.G13 - Gslr.G31);
 
-        if (tdi2)
-        {
-            tdi2_factor = (-2. * I * sin(4. * x) * gcmplx::exp(I * 4. * x));
-        }
-        else
-        {
-            tdi2_factor = 1.0;
-        }
-
-        transferL.transferL1 = tdi2_factor * factor_convention * factorAE * Araw;
-        transferL.transferL2 = tdi2_factor * factor_convention * factorAE * Eraw;
-        transferL.transferL3 = tdi2_factor * factor_convention * factorT * Traw;
-        return transferL;
+        transferL.transferL1 = factor_convention * factorAE * Araw;
+        transferL.transferL2 = factor_convention * factorAE * Eraw;
+        transferL.transferL3 = factor_convention * factorT * Traw;
     }
+
+    transferL.transferL1 *= tdi2_factor;
+    transferL.transferL2 *= tdi2_factor;
+    transferL.transferL3 *= tdi2_factor;
+
+    return transferL;
 }
 
 CUDA_CALLABLE_MEMBER
